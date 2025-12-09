@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  password_hash      String
+  createdAt DateTime @default(now()) @map("created_at") 
+
+  rooms RoomParticipant[]
+  sentMessages Message[] @relation("MessageSender")
+
+  @@map("users")
+}
+
+model Room {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  createBy  Int      @map("created_by")
+
+  participants RoomParticipant[]
+  messages Message[]
+
+  @@map("rooms") 
+}
+
+model RoomParticipant {
+  room_id   Int
+  user_id   Int
+  joined_at DateTime @default(now())
+
+  room Room @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@id([room_id, user_id])   // composite primary key
+  @@map("room_participants")
+}
+
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  roomId   Int @map("room_id")
+  senderId Int @map("sender_id")
+  body      String   @db.Text
+  sentAt   DateTime @default(now()) @db.Timestamp() @map("sent_at")
+
+  room   Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  sender User @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, sentAt])
+  @@map("messages")
+}
