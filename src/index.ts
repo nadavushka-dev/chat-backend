@@ -19,7 +19,7 @@ if (!process.env.SECRET) {
 }
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = config.port;
 
 app.use(
   cors({
