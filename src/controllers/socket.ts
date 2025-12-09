@@ -4,13 +4,14 @@ import { SE } from "../enum";
 import { prisma } from "../db/connection";
 import { createMessageSchema } from "./schemas/rooms.schema";
 import { idStringSchema } from "./schemas/id.schema";
+import config from "../config";
 
 export function socketHandler(s: Server) {
   const io = new socketServer(s, {
     cors: {
-      origin: "*",
+      origin: config.corsOrigin,
     },
-    maxHttpBufferSize: 1e4,
+    maxHttpBufferSize: config.socketMaxHttpBufferSize,
   });
 
   io.on(SE.CONNECTION, (socket) => {
