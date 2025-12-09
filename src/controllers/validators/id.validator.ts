@@ -7,5 +7,5 @@ export const validateId = (id: string): number => {
     throw new ValidationError("Invalid id");
   }
 
-  return parsed.data.id;
+  return parsed.data;
 };
