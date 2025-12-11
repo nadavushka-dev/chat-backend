@@ -9,7 +9,15 @@ import config from "../config";
 export function socketHandler(s: Server) {
   const io = new socketServer(s, {
     cors: {
-      origin: config.corsOrigin,
+      origin: (origin, cb) => {
+        if (
+          !origin ||
+          config.corsOrigin.includes("*") ||
+          config.corsOrigin.includes(origin)
+        )
+          return cb(null, true);
+        cb(new Error("Not allowed by CORS"));
+      },
     },
     maxHttpBufferSize: config.socketMaxHttpBufferSize,
   });
