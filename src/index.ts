@@ -24,7 +24,12 @@ const port = config.port;
 app.use(
   cors({
     origin: (origin, cb) => {
-      if (!origin || config.corsOrigin.includes(origin)) return cb(null, true);
+      if (
+        !origin ||
+        config.corsOrigin.includes("*") ||
+        config.corsOrigin.includes(origin)
+      )
+        return cb(null, true);
       cb(new Error("Not allowed by CORS"));
     },
   }),
