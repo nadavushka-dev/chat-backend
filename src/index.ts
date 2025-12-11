@@ -23,7 +23,10 @@ const port = config.port;
 
 app.use(
   cors({
-    origin: config.corsOrigin,
+    origin: (origin, cb) => {
+      if (!origin || config.corsOrigin.includes(origin)) return cb(null, true);
+      cb(new Error("Not allowed by CORS"));
+    },
   }),
 );
 app.use(express.json({ limit: config.httpSizeLimit }));
