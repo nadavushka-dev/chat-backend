@@ -4,11 +4,7 @@ import { validateId } from "./validators/id.validator";
 import { createUserSchema, loginUser } from "./schemas/users.schema";
 import { parseSchema } from "./validators/schemaParser.validator";
 import { asyncHandler } from "../utils/asyncHandler";
-import {
-  ConflictError,
-  NotFoundError,
-  ValidationError,
-} from "../middlewares/errors";
+import { ConflictError, ValidationError } from "../middlewares/errors";
 import { hashPassword, verifyPassword } from "../utils/password";
 import { jwtEncode } from "../utils/jwt";
 
@@ -76,7 +72,12 @@ router.post(
         createdAt: true,
       },
     });
-    res.status(201).json(data);
+    const token = jwtEncode({
+      userId: data.id,
+      username: data.name,
+      email: data.email,
+    });
+    res.status(201).json({ jwt: token });
   }),
 );
 
@@ -90,7 +91,7 @@ router.post(
     });
 
     if (!foundUser) {
-      throw new NotFoundError("Invalid email or password");
+      throw new ValidationError("Invalid email or password");
     }
 
     const isVerified = await verifyPassword(
@@ -101,9 +102,13 @@ router.post(
       throw new ValidationError("Invalid email or password");
     }
 
-    const token = jwtEncode({ userId: foundUser.id });
+    const token = jwtEncode({
+      userId: foundUser.id,
+      username: foundUser.name,
+      email: foundUser.email,
+    });
 
-    res.status(200).json(token);
+    res.status(200).json({ jwt: token });
   }),
 );
 export const usersRouter = router;
