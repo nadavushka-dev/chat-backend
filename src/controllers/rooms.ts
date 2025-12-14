@@ -70,6 +70,13 @@ router.get(
 
     const messages = await prisma.message.findMany({
       where: { roomId: roomId },
+      include: {
+        sender: {
+          select: {
+            name: true,
+          },
+        },
+      },
     });
 
     res.status(200).json(messages);
