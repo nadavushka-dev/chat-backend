@@ -3,8 +3,9 @@ import { Server as socketServer } from "socket.io";
 import { SE } from "../enum";
 import { prisma } from "../db/connection";
 import { createMessageSchema } from "./schemas/rooms.schema";
-import { idStringSchema } from "./schemas/id.schema";
+import { idNumberSchema } from "./schemas/id.schema";
 import config from "../config";
+import { jwtVerify } from "../utils/jwt";
 
 export function socketHandler(s: Server) {
   const io = new socketServer(s, {
@@ -22,11 +23,28 @@ export function socketHandler(s: Server) {
     maxHttpBufferSize: config.socketMaxHttpBufferSize,
   });
 
+  const onlineUsers = new Set<number>();
+
   io.on(SE.CONNECTION, (socket) => {
     console.log("Socket connected", socket.id);
+    const token = socket.handshake.auth.token;
+    if (!token) {
+      socket.disconnect();
+      return;
+    }
+    try {
+      const payload = jwtVerify(token);
+      onlineUsers.add(payload.userId);
+      socket.data.userId = payload.userId;
+      io.emit(SE.USER_ONLINE, payload.userId, payload.username);
+    } catch {
+      socket.disconnect();
+    }
+
+    socket.emit(SE.ONLINE_USERS, Array.from(onlineUsers));
 
     socket.on(SE.JOIN_ROOM, async (roomId: unknown) => {
-      const parsed = idStringSchema.safeParse(roomId);
+      const parsed = idNumberSchema.safeParse(roomId);
       if (!parsed.success) {
         socket.emit(SE.ERROR, { message: "Invalid room ID" });
         return;
@@ -40,20 +58,39 @@ export function socketHandler(s: Server) {
           throw new Error("Room not found");
         }
 
-        socket.join(parsed.data);
+        socket.join(parsed.data.toString());
+        console.log("joind into a room ", room.name);
+
+        await prisma.roomParticipant.upsert({
+          where: {
+            room_id_user_id: {
+              user_id: socket.data.userId,
+              room_id: room.id,
+            },
+          },
+          create: {
+            user_id: socket.data.userId,
+            room_id: room.id,
+          },
+          update: {},
+        });
       } catch (error) {
-        socket.emit(SE.ERROR, { message: "Room not found" });
+        const message =
+          error instanceof Error && error.message === "Room not found"
+            ? "Room not found"
+            : "Failed to join room";
+        socket.emit(SE.ERROR, { message });
       }
     });
 
-    socket.on(SE.LEAVE_ROOM, (roomId: string) => {
-      const parsed = idStringSchema.safeParse(roomId);
+    socket.on(SE.LEAVE_ROOM, (roomId: number) => {
+      const parsed = idNumberSchema.safeParse(roomId);
       if (!parsed.success) {
         socket.emit(SE.ERROR, { message: "Invalid room ID" });
         return;
       }
 
-      socket.leave(parsed.data);
+      socket.leave(parsed.data.toString());
     });
 
     socket.on(SE.MSG, async (data: unknown) => {
@@ -77,6 +114,8 @@ export function socketHandler(s: Server) {
     });
 
     socket.on(SE.DISCONNECT, () => {
+      onlineUsers.delete(socket.data.userId);
+      io.emit(SE.USER_OFFLINE, socket.data.userId);
       console.log("Socket disconnected", socket.id);
     });
   });
