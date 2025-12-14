@@ -7,5 +7,6 @@ const idParamSchema = z
   .pipe(z.number().int().positive());
 
 const idStringSchema = z.string().regex(/^\d+$/);
+const idNumberSchema = z.number().positive();
 
-export { idParamSchema, idStringSchema };
+export { idParamSchema, idStringSchema, idNumberSchema };
