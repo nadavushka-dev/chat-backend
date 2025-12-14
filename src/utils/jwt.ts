@@ -3,6 +3,8 @@ import config from "../config";
 
 export type JwtPayloadT = {
   userId: number;
+  email: string;
+  username: string;
   iat?: number;
   exp?: number;
 };
