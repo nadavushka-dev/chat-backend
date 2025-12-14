@@ -46,6 +46,7 @@ router.get(
 router.post(
   "/signup",
   asyncHandler(async (req, res) => {
+    console.log({ req });
     const user = parseSchema(createUserSchema, req);
 
     const isEmailExists = await prisma.user.findUnique({
@@ -77,7 +78,7 @@ router.post(
       username: data.name,
       email: data.email,
     });
-    res.status(201).json({ jwt: token });
+    res.status(200).json({ jwt: token });
   }),
 );
 
