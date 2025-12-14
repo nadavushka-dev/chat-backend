@@ -7,4 +7,7 @@ export const enum SE {
   LEAVE_ROOM = "leave_room",
   MSG = "msg",
   ERROR = "error",
+  USER_ONLINE = "user_online",
+  USER_OFFLINE = "user_offline",
+  ONLINE_USERS = "online_users",
 }
