@@ -47,7 +47,7 @@ jobs:
       - name: Trigger deployment
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.WORKFLOW_TOKEN }}
           script: |
             github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
