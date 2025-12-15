@@ -43,3 +43,15 @@ jobs:
           tags: ghcr.io/${{ github.repository }}:latest # Image name: ghcr.io/nadavushka-dev/backend:latest
           cache-from: type=gha # Use GitHub cache for faster builds
           cache-to: type=gha,mode=max # Save cache for next build
+
+      - name: Trigger deployment
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: 'chat-deployment',
+              workflow_id: 'deploy.yml',
+              ref: 'master'
+            });
