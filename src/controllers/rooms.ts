@@ -31,7 +31,7 @@ router.post(
       data: parsedRoom,
     });
 
-    res.status(201).json(createdRoom);
+    res.status(200).json(createdRoom);
   }),
 );
 
