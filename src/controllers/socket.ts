@@ -6,6 +6,7 @@ import { createMessageSchema } from "./schemas/rooms.schema";
 import { idNumberSchema } from "./schemas/id.schema";
 import config from "../config";
 import { jwtVerify } from "../utils/jwt";
+import { logger } from "../utils/logger";
 
 export const onlineUsers = new Set<number>();
 let _io: socketServer | null = null;
@@ -34,7 +35,7 @@ export function socketHandler(s: Server) {
   const io = _io;
 
   io.on(SE.CONNECTION, (socket) => {
-    console.log("Socket connected", socket.id);
+    logger.info(`Socket connected ${socket.id}`);
     const token = socket.handshake.auth.token;
     if (!token) {
       socket.disconnect();
@@ -67,7 +68,7 @@ export function socketHandler(s: Server) {
         }
 
         socket.join(parsed.data.toString());
-        console.log("joind into a room ", room.name);
+        logger.info(`joind into a room ${room.name}`);
 
         await prisma.roomParticipant.upsert({
           where: {
@@ -124,7 +125,7 @@ export function socketHandler(s: Server) {
     socket.on(SE.DISCONNECT, () => {
       onlineUsers.delete(socket.data.userId);
       io.emit(SE.USER_OFFLINE, socket.data.userId);
-      console.log("Socket disconnected", socket.id);
+      logger.info(`Socket disconnected ${socket.id}`);
     });
   });
 }

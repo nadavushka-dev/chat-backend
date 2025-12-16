@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "./errors";
 import { Prisma } from "@prisma/client";
+import { logger } from "../utils/logger";
 
 export const handleErrors = (
   err: Error,
@@ -32,6 +33,6 @@ export const handleErrors = (
     return;
   }
 
-  console.error(err.stack);
+  logger.error(err.stack);
   res.status(500).json({ error: "Internal server error" });
 };

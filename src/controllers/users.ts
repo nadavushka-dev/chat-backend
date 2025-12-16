@@ -46,7 +46,6 @@ router.get(
 router.post(
   "/signup",
   asyncHandler(async (req, res) => {
-    console.log({ req });
     const user = parseSchema(createUserSchema, req);
 
     const isEmailExists = await prisma.user.findUnique({

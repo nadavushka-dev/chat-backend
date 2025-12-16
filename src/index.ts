@@ -9,6 +9,8 @@ import { handleErrors } from "./middlewares/handleErrors.middleware";
 import { notFoundHandler } from "./middlewares/routeNotFound.middleware";
 import { authMiddleware } from "./middlewares/auth.middleware";
 import config from "./config";
+import { pinoHttp } from "pino-http";
+import { logger } from "./utils/logger";
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not set");
@@ -20,6 +22,8 @@ if (!process.env.SECRET) {
 
 const app = express();
 const port = config.port;
+
+app.use(pinoHttp({ logger }));
 
 app.use(
   cors({
@@ -45,16 +49,16 @@ app.use(notFoundHandler);
 app.use(handleErrors);
 
 const server = app.listen(port, () => {
-  console.log("Server running on port " + port);
+  logger.info("Server running on port " + port);
 });
 
 socketHandler(server);
 
 const shutdown = (signal: string) => {
-  console.log(`${signal} received, shutting down...`);
+  logger.info(`${signal} received, shutting down...`);
   server.close(() => {
     prisma.$disconnect();
-    console.log("Server closed");
+    logger.info("Server closed");
     process.exit(0);
   });
 };

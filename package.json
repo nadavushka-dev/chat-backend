@@ -6,8 +6,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "test": "jest",
+    "dev": "mkdir -p logs && ts-node-dev --quiet --respawn --transpile-only src/index.ts 2>&1 | tee -a ./logs/app.$(date +%d-%m-%Y).log",
     "test:loby": "ts-node src/test-loby.socket.ts",
     "test:game": "ts-node src/test-gameRoom.socket.ts"
   },
@@ -23,6 +23,7 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.16.3",
+    "pino-http": "^11.0.0",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "zod": "^4.1.13"
