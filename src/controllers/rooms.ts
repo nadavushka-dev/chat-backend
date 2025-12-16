@@ -5,6 +5,8 @@ import { validateId } from "./validators/id.validator";
 import { parseSchema } from "./validators/schemaParser.validator";
 import { asyncHandler } from "../utils/asyncHandler";
 import { NotFoundError } from "../middlewares/errors";
+import { getIO, onlineUsers } from "./socket";
+import { SE } from "../enum";
 
 const router = Router();
 
@@ -32,6 +34,9 @@ router.post(
     });
 
     res.status(200).json(createdRoom);
+
+    const io = getIO();
+    io.emit(SE.ROOM_CREATED, createdRoom);
   }),
 );
 

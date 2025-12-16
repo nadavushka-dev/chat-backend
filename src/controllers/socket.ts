@@ -7,8 +7,16 @@ import { idNumberSchema } from "./schemas/id.schema";
 import config from "../config";
 import { jwtVerify } from "../utils/jwt";
 
+export const onlineUsers = new Set<number>();
+let _io: socketServer | null = null;
+
+export function getIO(): socketServer {
+  if (!_io) throw new Error("Socket.io not initialized");
+  return _io;
+}
+
 export function socketHandler(s: Server) {
-  const io = new socketServer(s, {
+  _io = new socketServer(s, {
     cors: {
       origin: (origin, cb) => {
         if (
@@ -23,7 +31,7 @@ export function socketHandler(s: Server) {
     maxHttpBufferSize: config.socketMaxHttpBufferSize,
   });
 
-  const onlineUsers = new Set<number>();
+  const io = _io;
 
   io.on(SE.CONNECTION, (socket) => {
     console.log("Socket connected", socket.id);
