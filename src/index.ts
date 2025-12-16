@@ -40,8 +40,15 @@ app.use(
 );
 app.use(express.json({ limit: config.httpSizeLimit }));
 
-app.get("/", (_, res) => {
-  res.json({ message: "Welcome to chat-node API" });
+app.get("/health", async (_, res) => {
+  let status = 200;
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+  } catch (err) {
+    status = 500;
+    logger.error(`Health check failed with ${err}`);
+  }
+  res.status(status).json({ status: status === 200 ? "ok" : "error" });
 });
 app.use("/rooms", authMiddleware, roomsRouter);
 app.use("/users", usersRouter);
