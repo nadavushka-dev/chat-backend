@@ -5,7 +5,7 @@ import { prisma } from "../db/connection";
 import { createMessageSchema } from "./schemas/rooms.schema";
 import { idNumberSchema } from "./schemas/id.schema";
 import config from "../config";
-import { jwtVerify } from "../utils/jwt";
+import { jwtVerify } from "../utils/auth";
 import { logger } from "../utils/logger";
 
 export const onlineUsers = new Set<number>();

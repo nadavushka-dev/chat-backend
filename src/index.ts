@@ -11,6 +11,7 @@ import { authMiddleware } from "./middlewares/auth.middleware";
 import config from "./config";
 import { pinoHttp } from "pino-http";
 import { logger } from "./utils/logger";
+import { authRouter } from "./controllers/auth";
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not set");
@@ -27,6 +28,7 @@ app.use(pinoHttp({ logger }));
 
 app.use(
   cors({
+    credentials: true,
     origin: (origin, cb) => {
       if (
         !origin ||
@@ -51,7 +53,8 @@ app.get("/health", async (_, res) => {
   res.status(status).json({ status: status === 200 ? "ok" : "error" });
 });
 app.use("/rooms", authMiddleware, roomsRouter);
-app.use("/users", usersRouter);
+app.use("/users", authMiddleware, usersRouter);
+app.use("/auth", authRouter);
 app.use(notFoundHandler);
 app.use(handleErrors);
 

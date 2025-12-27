@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { AuthError } from "./errors";
-import { jwtVerify } from "../utils/jwt";
+import { jwtVerify } from "../utils/auth";
 
 export const authMiddleware = (
   req: Request,

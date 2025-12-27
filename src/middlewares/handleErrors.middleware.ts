@@ -34,5 +34,6 @@ export const handleErrors = (
   }
 
   logger.error(err.stack);
+
   res.status(500).json({ error: "Internal server error" });
 };

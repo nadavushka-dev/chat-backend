@@ -2,26 +2,25 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
-  binaryTargets=["native", "linux-musl-openssl-3.0.x"]
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
-
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String
-  password_hash      String
-  createdAt DateTime @default(now()) @map("created_at") 
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  name          String
+  password_hash String
+  createdAt     DateTime @default(now()) @map("created_at")
 
-  rooms RoomParticipant[]
-  sentMessages Message[] @relation("MessageSender")
+  rooms        RoomParticipant[]
+  sentMessages Message[]         @relation("MessageSender")
+  Auth         Auth[]
 
   @@map("users")
 }
@@ -33,9 +32,9 @@ model Room {
   createBy  Int      @map("created_by")
 
   participants RoomParticipant[]
-  messages Message[]
+  messages     Message[]
 
-  @@map("rooms") 
+  @@map("rooms")
 }
 
 model RoomParticipant {
@@ -46,21 +45,31 @@ model RoomParticipant {
   room Room @relation(fields: [room_id], references: [id], onDelete: Cascade)
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@id([room_id, user_id])   // composite primary key
+  @@id([room_id, user_id]) // composite primary key
   @@map("room_participants")
 }
 
-
 model Message {
-  id        Int      @id @default(autoincrement())
-  roomId   Int @map("room_id")
-  senderId Int @map("sender_id")
-  body      String   @db.Text
-  sentAt   DateTime @default(now()) @db.Timestamp() @map("sent_at")
+  id       Int      @id @default(autoincrement())
+  roomId   Int      @map("room_id")
+  senderId Int      @map("sender_id")
+  body     String   @db.Text
+  sentAt   DateTime @default(now()) @map("sent_at") @db.Timestamp()
 
   room   Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
   sender User @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
 
   @@index([roomId, sentAt])
   @@map("messages")
+}
+
+model Auth {
+  sessionId String   @id @unique @map("session_id")
+  userId    Int      @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime @map("expires_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("auths")
 }
